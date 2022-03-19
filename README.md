@@ -16,3 +16,8 @@ docker rmi $(docker images -q) -f
 ```
 kubectl run mynginx --image nginx
 ```
+
+## pod 삭제
+```
+kubectl delete pod mynginx
+```
