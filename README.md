@@ -52,7 +52,7 @@ apps/v1
 ```
 kubectl api-resources
 ```
-해당 커맨드로 리소스의 version apiVersion 을 어떤 것을 기입해야 하는지 확인 가능
+해당 커맨드로 리소스의 version apiVersion, kind 을 어떤 것을 기입해야 하는지 확인 가능
 
 ## yaml 파일 싫행. 선언형 명령 정의서(YAML) 기반의 컨테이너 생성
 ```
@@ -68,3 +68,23 @@ kubectl scale rs --replicas=5 new-replica-set
 kubectl edit rs new-replica-set
 ```
 scale 을 이용하던지 edit 을 이용하여 `spec.replicas` 를 수정하면 됨
+
+## yaml 정의서 작성 주의 사항
+- kind 대소문자 구문 확실히! deployment x -> Deployment
+```
+kubectl api-resources
+```
+
+## 전체 네임스페이스의 pod 조회
+```
+kubectl get pod --all-namespaces
+```
+
+## 특정 네임스페이스에 pod 생성
+```
+kubectl run nginx --image=nginx -n namespace
+k run redis --image=redis -n finance
+```
+
+## service 도메인 주소 법칙
+<서비스 이름>.<네임스페이스>.svc.cluster.local
