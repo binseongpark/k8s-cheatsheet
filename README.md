@@ -98,3 +98,23 @@ nodePort: 호스트의 포트 지정
 :30080(nodePort) -> :8080(port) -> :80(targetPort)
 
 30080 으로 클러스터로 들어오면 8080 서비스로 가서 80 을 연결해준다
+
+## 라벨 부여하기
+```
+kubectl label pod redis tier=db
+```
+
+## pod 만들면서 service 만들기
+```
+kubectl run custom-nginx --image=nginx --expose --port 8080 --dry-run=client -o yaml > custom-nginx.yaml
+```
+
+## namespace 생성
+```
+kubectl create namepscae dev-ns
+```
+
+## 특정 namespace 에 yaml 실행
+```
+kubectl apply -f redis-deploy.yaml -n dev-ns
+```
