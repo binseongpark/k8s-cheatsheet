@@ -87,4 +87,14 @@ k run redis --image=redis -n finance
 ```
 
 ## service 도메인 주소 법칙
-<서비스 이름>.<네임스페이스>.svc.cluster.local
+`<서비스 이름>.<네임스페이스>.svc.cluster.local`
+
+## service 항목 정리
+port: Service 로 들어오는 포트를 지정
+protocol: TCP, UDP, HTTP 등
+targetPort: 트래픽을 전달할 컨테이너의 포트를 지정
+nodePort: 호스트의 포트 지정
+
+:30080(nodePort) -> :8080(port) -> :80(targetPort)
+
+30080 으로 클러스터로 들어오면 8080 서비스로 가서 80 을 연결해준다
