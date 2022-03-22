@@ -118,3 +118,33 @@ kubectl create namepscae dev-ns
 ```
 kubectl apply -f redis-deploy.yaml -n dev-ns
 ```
+
+## 노드 조회 시 라벨도 표시하기
+```
+kubectl get node --show-labels
+```
+
+## 노드에 라벨 부여하기
+```
+kubectl label node node01 disktype=ssd
+```
+
+## 노드에 taint 제거하기
+node-role.kubernetes.io/master 에 담겨있는 taint 값을 없앤다
+```
+kubectl taint node controlplane node-role.kubernetes.io/master-
+```
+
+## 특정 노드에 파드 실행시키기
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  nodeName: foo-node # 특정 노드에 파드 스케줄
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+```
