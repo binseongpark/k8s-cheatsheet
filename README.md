@@ -148,3 +148,45 @@ spec:
     image: nginx
     imagePullPolicy: IfNotPresent
 ```
+
+## 특정라벨 파드조회
+```
+kubectl get pod -l bu=finance
+```
+
+## 여러개 라벨 파드 조회
+```
+kubectl get pod -l bu=finance,tier=frontend,env=prod
+```
+
+## 전체 리소스에서 특정 라벨 조회
+```
+kubectl get all --selector env=prod
+```
+
+## 전체 리소스에서 여러개 라벨 조회
+```
+kubectl get all --selector env=prod,bu=finance,tier=frontend
+```
+
+## 노드에 taint 적용하기
+```
+kubectl taint node node01 spray=mortein:NoSchedule
+```
+
+## 파드에 toleration 적용하기
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bee
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+  tolerations:
+  - key: "spray"
+    value: "mortein"
+    operator: "Equal"
+    effect: "NoSchedule"
+```
