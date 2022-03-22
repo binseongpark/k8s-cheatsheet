@@ -190,3 +190,31 @@ spec:
     operator: "Equal"
     effect: "NoSchedule"
 ```
+
+## nodeAffinity key만 있으면 될 때
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: red
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: red
+  template:
+    metadata:
+      labels:
+        name: red
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+```
