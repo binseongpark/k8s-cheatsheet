@@ -218,3 +218,191 @@ spec:
               - key: node-role.kubernetes.io/master
                 operator: Exists
 ```
+
+# 예제 풀이
+## 01
+Create a new ClusterRole named deployment-clusterrole that only allows the creation of the following resource types:
+- Deployment
+- StatefulSet
+- DaemonSet
+- Create a new ServiceAccount named cicd-token in the existing namespace app-team1.
+Limited to namespace app-team1, bind the new ClusterRole deployment-clusterrole to the new ServiceAccount cicd-token.
+
+```
+kubectl create clusterrole deployment-clusterrole --verb=create --resource=deployment,statefulset,daemonset
+kubectl create serviceaccount cicd-token -n app-team1
+kubectl create rolebinding cicd-clusterrole --clusterrole=deployment-clusterrole --serviceaccount=app-team1:cicd-token
+```
+
+## clusterrole?
+
+## serviceaccount?
+
+## rolebinding?
+
+## --verb=create?
+
+## 02
+Set the node named ek8s-node-1 as unavaliable and reschedule all the pods running on it.
+```
+kubectl cordon ek8s-node-1
+kubectl drain ek8s-node-1 --delete-local-data --ignore-daemonsets --force 
+```
+
+## cordon?
+
+## dragin
+
+## 03
+Given an existing Kubernetes cluster running version 1.20.0，upgrade all of Kubernetes control plane and node components on the master node only to version 1.20.1.
+
+You are also expected to upgrade kubelet and kubectl on the master node.
+
+`Be sure to drain the master node
+before upgrading it and uncordon it after the upgrade.
+Do not upgrade the worker nodes,etcd,the container manager,the CNI plugin,the DNS service or any other addons.`
+
+```
+kubectl config use-context mk8s
+kubectl get node
+kubectl cordon mk8s-master-1
+kubectl drain mk8s-master-1 --delete-local-data --ignore-daemonsets --force
+ssh mk8s-master-1
+sudo -i
+apt install kubeadm=1.20.1-00 -y
+kubeadm version (check kubeadm version)
+kubeadm upgrade plan
+kubeadm upgrade apply v1.20.1 --etcd-upgrade=false
+apt install kubelet=1.20.1-00 kubectl=1.20.1-00 -y
+systemctl kubelet
+exit
+exit (if using sudo -i, be sure to exit twice here)
+kubectl get node (confirmed that only the master node was upgraded to version 1.20.1)
+```
+
+
+## 04
+First, create a snapshot of the existing etcd instance running on https://127.0.0.1:2379 and save the snapshot to /data/backup/etcd-snapshot.db.
+
+Creating a snapshot for a given instance is expected to complete within a few seconds. If the operation appears to hang, there may be a problem with the command. Cancel the operation with ctrl+c and try again.
+
+Then restore the existing previous snapshot located at /var/data/etcd-snapshot-previous.db.
+```
+The following TLS certificates and keys are provided to connect to the server via etcdctl.
+
+ca certificate: /opt/KUIN00601/ca.crt
+Client certificate: /opt/KUIN00601/etcd-client.crt
+Client key: /opt/KUIN00601/etcd-client.key
+```
+
+```
+# ETCDCTL_API=3 etcdctl --endpoint=https://127.0.0.1:2379 --cert-file=/opt/KUIN00601/etcd-client.crt --key-file=/opt/KUIN00601/etcd-client.key --ca-file=/opt/KUIN00601/ca.crt snapshot save /data/backup/etcd-snapshot.db
+ 
+# ETCDCTL_API=3 etcdctl --endpoint=https://127.0.0.1:2379 --cert-file=/opt/KUIN00601/etcd-client.crt --key-file=/opt/KUIN00601/etcd-client.key --ca-file=/opt/KUIN00601/ca.crt snapshot restore /var/data/etcd-snapshot-previous.db
+```
+
+## 05
+Create a new NetworkPolicy named allow-port-from-namespace to allow Pods in the existing namespace internal to connect to port 8080 of other Pods in the same namespace.
+Ensure that the new NetworkPolicy:
+
+- does not allow access to Pods not listening on port 8080.
+- does not allow access from Pods not in namespace internal.
+
+
+```
+Create a networkPolicy. For pods in the namespace internal, only pods in the same namespace are allowed to access, and port 9000 of the pod can be accessed.
+Pod access not from this namespace is not allowed.
+Pods that are not listening on port 9000 are not allowed to access.
+```
+
+```
+#network.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+   name: allow-port-from-namespace
+   namespace: internal
+spec:
+   podSelector: {}
+   policyTypes:
+   -Ingress
+   ingress:
+   - from:
+     - podSelector: {}
+     ports:
+     - port: 8080
+      
+         
+# spec.podSelector restricts access to pods in this namespace
+kubectl create -f network.yaml
+```
+
+## 06
+Reconfigure the existing deployment front-end and add a port specifiction named http exposing port 80/tcp of the existing container nginx.
+
+Create a new service named front-end-svc exposing the container prot http.
+
+Configure the new service to also expose the individual Pods via a NodePort on the nodes on which they are scheduled.
+
+View existing deployments
+```
+kubectl get deployment                  
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+front-end   1/1     1            1           18s
+```
+
+Edit, add port configuration
+```
+kubectl edit deployment front-end
+spec:
+      containers:
+      \- image: nginx:1.14.2
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        \- containerPort: 80
+          name: http
+          protocol: TCP
+ 
+# 暴露出来
+kubectl expose deployment front-end --name=front-end-svc --port=80 --target-port=80 --type=NodePort
+```
+
+## 07
+Create a new nginx Ingress resource as follows:
+- Name: ping
+- Namespace: ing-internal
+- Exposing service hi on path /hi using service port 5678
+
+```
+The avaliability of service hi can be checked using the following command,which should return hi:
+curl -kL /hi
+```
+
+```
+vi ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ping
+  namespace: ing-internal
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /hi
+        pathType: Prefix
+        backend:
+          service:
+            name: hi
+            port:
+              number: 5678
+kubectl create -f ingress.yaml 
+```
+
+## 08
+Scale the deployment presentation to 3 pods.
+```
+kubectl get deployment
+kubectl scale deployment.apps/presentation --replicas=3 
+```
