@@ -406,3 +406,236 @@ Scale the deployment presentation to 3 pods.
 kubectl get deployment
 kubectl scale deployment.apps/presentation --replicas=3 
 ```
+
+## 09
+Schedule a pod as follows:
+
+- name: nginx-kusc00401
+- Image: nginx
+- Node selector: disk-spinning
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-kusc00401
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      imagePullPolicy: IfNotPresent
+      nodeSelector:
+      disk: spinning
+
+kubectl create -f node-select.yaml
+```
+
+## 10
+Check to see how many nodes are ready (not including nodes tainted NoSchedule)and write the number to /opt/KUSC00402/kusc00402.txt.
+
+```
+kubectl describe nodes | grep ready|wc -l
+kubectl describe nodes | grep -i taint | grep -i noschedule |wc -l
+echo 3 > /opt/KUSC00402/kusc00402.txt
+ 
+kubectl get node | grep -i ready |wc -l
+kubectl describe nodes | grep -i taints | grep -i noschedule |wc -l
+echo 2 > /opt/KUSC00402/kusc00402.txt 
+```
+
+## 11
+Create a pod named kucc8 with a single app container for each of the following images running inside (there may be between 1 and 4 images specified):
+nginx + redis + memcached + consul.
+
+```
+kubectl run kucc8 --image=nginx --dry-run -o yaml > kucc8.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  name: kucc8
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+  - image: redis
+    name: redis
+  - image: memcached
+    name: memcached
+  - image: consul
+    name: consul
+kubectl create -f kucc8.yaml 
+```
+
+## 12
+Create a persistent volume whit name app-config, of capacity 1Gi and access mode ReadOnlyMany . the type of volume is hostPath and its location is /srv/app-config .
+
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-config
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  hostPath:
+    path: /srv/app-config
+```
+```
+kubectl create -f pv.yaml 
+```
+
+## 13
+Create a new PersistentVolumeClaim:
+- Name: pv-volume
+- Class: csi-hostpath-sc
+- Capacity: 10Mi
+
+Create a new Pod which mounts the PersistentVolumeClaim as a volume:
+- Name: web-server
+- Image: nginx
+- Mount path: /usr/share/nginx/html
+
+Configure the new Pod to have ReadWriteOnce access on the volume.
+
+Finally,using kubectl edit or Kubectl patch expand the PersistentVolumeClaim to a capacity of 70Mi and record that change.
+
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: csi-hostpath-sc
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-server
+spec:
+  containers:
+    - name: web-server
+      image: nginx
+      volumeMounts:
+      - mountPath: "/usr/share/nginx/html"
+        name: pv-volume
+  volumes:
+    - name: pv-volume
+      persistentVolumeClaim:
+        claimName: pv-volume
+```
+```
+kubectl create -f pod-pvc.yaml
+kubectl edit pvc pv-volume --record 
+```
+
+## 14
+Monitor the logs of pod bar and:
+
+- Extract log lines corresponding to error unable-to-access-website
+- Write them to /opt/KUTR00101/bar
+```
+kubectl logs bar | grep 'unable-to-access-website' > /opt/KUTR00101/bar
+cat /opt/KUTR00101/bar
+```
+
+## 15
+Context
+Without changing its existing containers,an existing Pod needs to be integrated into Kubernetes’s build-in logging architecture (e.g. kubectl logs). Adding a streaming sidecar container is a good and common way to accomplish this requirement.
+
+Task
+Add a busybox sidecar container to the existing Pod big-corp-app. The new sidecar container has to run the following command:
+```
+/bin/sh -c tail -n+1 -f /var/log/big-corp-app.log 
+```
+
+Use a volume mount named logs to make the file /var/log/big-corp-app.log available to the sidecar container.
+
+```
+Don’t modify the existing container.
+Don’t modify the path of the log file,both containers must access it at /var/log/big-corp-app.log.
+```
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: big-corp-app
+spec:
+  containers:
+  - name: big-corp-app
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - >
+      i=0;
+      while true;
+      do
+        echo "$(date) INFO $i" >> /var/log/big-corp-app.log;
+        i=$((i+1));
+        sleep 1;
+      done
+    volumeMounts:
+    - name: logs
+      mountPath: /var/log
+  - name: count-log-1
+    image: busybox
+    args: [/bin/sh, -c, 'tail -n+1 -f /var/log/big-corp-app.log']
+    volumeMounts:
+    - name: logs
+      mountPath: /var/log
+  volumes:
+  - name: logs
+    emptyDir: { }
+```
+```
+kubectl logs big-corp-app -c count-log-1 
+```
+
+## 16
+Form the pod label name-cpu-loader,find pods running high CPU workloads and write the name of the pod consuming most CPU to the file /opt/KUTR00401/KURT00401.txt(which alredy exists).
+
+View the CPU usage of the Pod with the label name=cpu-user-loader and write the name of the pod with the highest CPU usage into the /opt/KUTR00401/KUTR00401.txt file
+
+```
+kubectl top pods -l name=name-cpu-loader --sort-by=cpu
+echo 'Top pod name' >>/opt/KUTR00401/KUTR00401.txt
+```
+
+
+## 17
+Task
+
+A Kubernetes worker node,named wk8s-node-0 is in state NotReady .
+Investigate why this is the case,and perform any appropriate steps to bring the node to a Ready state,ensuring that any changes are made permanent.
+
+```
+Yon can ssh to teh failed node using:
+
+ssh wk8s-node-o 
+You can assume elevated privileges on the node with the following command:
+
+sudo -i 
+```
+
+```
+#The node named wk8s-node-1 is in the NotReady state, restore it to the Ready state, and set it to auto-start
+# Connect to the NotReady node
+ssh wk8s-node-0
+#Get permission
+sudo -i
+# Check if the service is running normally
+systemctl status kubelet
+#If the service is not running normally, restore it
+systemctl start kubelet
+#Set the boot to start automatically
+systemctl enable kubelet
+```
