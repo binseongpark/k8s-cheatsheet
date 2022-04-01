@@ -225,7 +225,8 @@ Create a new ClusterRole named deployment-clusterrole that only allows the creat
 - Deployment
 - StatefulSet
 - DaemonSet
-- Create a new ServiceAccount named cicd-token in the existing namespace app-team1.
+
+Create a new ServiceAccount named cicd-token in the existing namespace app-team1.
 Limited to namespace app-team1, bind the new ClusterRole deployment-clusterrole to the new ServiceAccount cicd-token.
 
 ```
@@ -249,9 +250,14 @@ kubectl cordon ek8s-node-1
 kubectl drain ek8s-node-1 --delete-local-data --ignore-daemonsets --force 
 ```
 
+## --delete-local-data
+local data를 모두 삭제
+
 ## cordon?
+노드에 더 이상 Pod가 출입하지 못하게 통제. 이후부터 해당 노드에는 Pod가 생성되지 않음
 
 ## dragin
+cordon하면 새로운 Pod가 더 이상 할당되지는 않지만, 기존에 돌고 있는 Pod에 대해서는 관여하지 않음. 기존에 실행하고 있는 Pod 들도 퇴거시키기 위해 drain 을 사용
 
 ## 03
 Given an existing Kubernetes cluster running version 1.20.0，upgrade all of Kubernetes control plane and node components on the master node only to version 1.20.1.
