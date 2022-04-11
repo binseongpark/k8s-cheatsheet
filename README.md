@@ -400,7 +400,7 @@ spec:
           name: http
           protocol: TCP
  
-# 暴露出来
+# exposed
 kubectl expose deployment front-end --name=front-end-svc --port=80 --target-port=80 --type=NodePort
 ```
 
