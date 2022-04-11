@@ -500,10 +500,10 @@ metadata:
   name: nginx-kusc00401
 spec:
   containers:
-    - name: nginx
-      image: nginx
-      imagePullPolicy: IfNotPresent
-      nodeSelector:
+  - image: nginx
+    name: nginx
+    imagePullPolicy: IfNotPresent
+    nodeSelector:
       disk: spinning
 
 kubectl create -f node-select.yaml
