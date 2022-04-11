@@ -236,7 +236,7 @@ kubectl create rolebinding cicd-clusterrole --clusterrole=deployment-clusterrole
 ```
 
 ## clusterrole?
-
+클러스토롤은 클러스터 전체에 대한 권한을 관리
 ## serviceaccount?
 
 ## rolebinding?
