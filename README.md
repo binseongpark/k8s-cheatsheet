@@ -219,6 +219,46 @@ spec:
                 operator: Exists
 ```
 
+## NetworkPolicy 
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - {}
+  egress:
+  - {}
+```
+- namespace: 네트워크 정책이 적용될 네임스페이스를 지정
+- podSelector: 네트워크 정책을 적용할 pod를 라벨 셀렉터로 선택, {} 의 의미는 특정 라벨을 지정하지 않는 모든 pod를 의미
+- ingress: 인바운드 트래픽 허용 규칙을 지정, {} 의 의미는 인바운드로 들어오는 모든 트래픽을 허용
+- egress: 아웃바운드 트래픽 허용 규칙을 지정, {} 의 의미는 아웃바운드로 들어오는 모든 트래픽을 허용
+
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: web-open
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: web
+  ingress:
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+```
+
 # 예제 풀이
 ## 01
 Create a new ClusterRole named deployment-clusterrole that only allows the creation of the following resource types:
@@ -338,7 +378,7 @@ Client key: /opt/KUIN00601/etcd-client.key
 ```
 
 ## 05
-Create a new NetworkPolicy named allow-port-from-namespace to allow Pods in the existing namespace internal to connect to port 8080 of other Pods in the same namespace.
+Create a new NetworkPolicy named `allow-port-from-namespace` to allow Pods in the existing namespace `internal` to connect to port 8080 of other Pods in the same namespace.
 Ensure that the new NetworkPolicy:
 
 - does not allow access to Pods not listening on port 8080.
@@ -361,7 +401,7 @@ metadata:
 spec:
    podSelector: {}
    policyTypes:
-   -Ingress
+   - Ingress
    ingress:
    - from:
      - podSelector: {}
