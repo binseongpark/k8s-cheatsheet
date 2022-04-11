@@ -258,6 +258,9 @@ spec:
     - protocol: TCP
       port: 80
 ```
+- podSelector: run=web 이라는 pod에 대해서 다음과 같은 정책을 허용
+- ingress[0].from[0].podSelector: {} 은 모든 라벨에 해당. 이는 트래픽에 열려있다는 것을 의미
+- ingress[0].ports: 하지만 모든 포트가 열린 것이 아니라 80 포트에 대해서만 열려있음
 
 # 예제 풀이
 ## 01
