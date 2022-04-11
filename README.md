@@ -238,10 +238,40 @@ kubectl create rolebinding cicd-clusterrole --clusterrole=deployment-clusterrole
 ## clusterrole?
 클러스토롤은 클러스터 전체에 대한 권한을 관리
 ## serviceaccount?
-
+사용자
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: myuser
+  namespace: default
+```
 ## rolebinding?
-
+롤과 사용자를 묶어줌
+```
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-rolebinding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: myuser
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: read-role
+  apiGroup: rbac.authorization.k8s.io
+```
 ## --verb=create?
+어떤 동작이 가능한지 설정
+- create: 새로운 리소스 생성
+- get: 개별 리소스 조회
+- list: 여러건의 리소스 조회
+- update: 기존 리소스내용 전체 업데이트
+- patch: 기존 리소스 중 일부 내용 변경
+- delete: 개발 리소스 삭제
+- deleteCollection: 여러 리소스 삭제
 
 ## 02
 Set the node named ek8s-node-1 as unavaliable and reschedule all the pods running on it.
@@ -256,7 +286,7 @@ local data를 모두 삭제
 ## cordon?
 노드에 더 이상 Pod가 출입하지 못하게 통제. 이후부터 해당 노드에는 Pod가 생성되지 않음
 
-## dragin
+## drain
 cordon하면 새로운 Pod가 더 이상 할당되지는 않지만, 기존에 돌고 있는 Pod에 대해서는 관여하지 않음. 기존에 실행하고 있는 Pod 들도 퇴거시키기 위해 drain 을 사용
 
 ## 03
