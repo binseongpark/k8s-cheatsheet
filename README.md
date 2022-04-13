@@ -500,11 +500,11 @@ metadata:
   name: nginx-kusc00401
 spec:
   containers:
-  - image: nginx
-    name: nginx
+  - name: nginx
+    image: nginx
     imagePullPolicy: IfNotPresent
-    nodeSelector:
-      disk: spinning
+  nodeSelector:
+    disk: spinning
 
 kubectl create -f node-select.yaml
 ```
@@ -521,6 +521,7 @@ kubectl get node | grep -i ready |wc -l
 kubectl describe nodes | grep -i taints | grep -i noschedule |wc -l
 echo 2 > /opt/KUSC00402/kusc00402.txt 
 ```
+정보) `>` 은 덮어쓰기 `>>` 이어쓰기
 
 ## 11
 Create a pod named kucc8 with a single app container for each of the following images running inside (there may be between 1 and 4 images specified):
